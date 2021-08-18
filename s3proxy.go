@@ -92,7 +92,6 @@ func (S3Proxy) CaddyModule() caddy.ModuleInfo {
 
 func (p *S3Proxy) Provision(ctx caddy.Context) (err error) {
 	p.log = ctx.Logger(p)
-
 	if p.Root == "" {
 		p.Root = "{http.vars.root}"
 	}
@@ -322,6 +321,10 @@ func (p S3Proxy) writeResponseFromGetObject(w http.ResponseWriter, obj *s3.GetOb
 	setStrHeader(w, "ETag", obj.ETag)
 	setStrHeader(w, "Expires", obj.Expires)
 	setTimeHeader(w, "Last-Modified", obj.LastModified)
+	if obj.ContentLength != nil {
+		cl := fmt.Sprintf("%d", *obj.ContentLength)
+		setStrHeader(w, "Content-Length", &cl)
+	}
 
 	// Adds all custom headers which where used on this object
 	for key, value := range obj.Metadata {
@@ -487,7 +490,7 @@ func (p S3Proxy) GetHandler(w http.ResponseWriter, r *http.Request, fullPath str
 	if err != nil {
 		caddyErr := convertToCaddyError(err)
 		if caddyErr.StatusCode == http.StatusNotFound {
-			// Log as debug as this one may be qute common
+			// Log as debug as this one may be quite common
 			p.log.Debug("not found",
 				zap.String("bucket", p.Bucket),
 				zap.String("key", fullPath),
