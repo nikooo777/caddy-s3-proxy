@@ -1,7 +1,9 @@
 module github.com/lindenlab/caddy-s3-proxy
 
 go 1.13
-
+replace (
+	github.com/lindenlab/caddy-s3-proxy latest => github.com/nikooo777/caddy-s3-proxy latest
+)
 require (
 	cloud.google.com/go v0.54.0 // indirect
 	github.com/aws/aws-sdk-go v1.36.23
